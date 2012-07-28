@@ -16,41 +16,96 @@
 #define READING_INTERVAL 1000
 
 /* common clock and query pins for the thermos */
-int thermoCommonCLK = 3;
+int thermoCommonCLK = 5;
 int thermoCommonCS  = 4;
 
 /* each thermo gets its own data pin */
-int thermo1D0 = 5;
+int thermo1D0 = 3;
 int thermo2D0 = 6;
 int thermo3D0 = 7;
 int thermo4D0 = 8;
 
+/* setup thermos */
 Adafruit_MAX31855 thermo1(thermoCommonCLK, thermoCommonCS, thermo1D0);
 Adafruit_MAX31855 thermo2(thermoCommonCLK, thermoCommonCS, thermo2D0);
 Adafruit_MAX31855 thermo3(thermoCommonCLK, thermoCommonCS, thermo3D0);
 Adafruit_MAX31855 thermo4(thermoCommonCLK, thermoCommonCS, thermo4D0);
 
 double celsiusReadings[4];
-String thermoErrorCodes[4];
+int    thermoErrorCodes[4];
 
 float deltaReading;
+
+char requestBuffer[1024];
 
 /* http server vars */
 byte mac[]     = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED};
 byte ip[]      = { 192,168,1,20 };
 byte gateway[] = { 192,168,1,1};	
 byte subnet[]  = { 255, 255, 255, 0 };
-
 Server server(80);
 
-void setup(){
+void send404(Client client) {
+  client.println("HTTP/1.1 404 OK");
+  client.println("Content-Type: text/html");
+  client.println("Connnection: close");
+  client.println();
+  client.println("<!DOCTYPE HTML>");
+  client.println("<html><body>404</body></html>");
+}
+
+void sendOKHeader(Client client){
+  client.println("HTTP/1.1 200 OK");
+  client.println("Content-Type: text/html");
+  client.println();
+}
+
+void handleRequest(Client client){
+  String req = String(requestBuffer);
+  String command;
   
+  if(req.startsWith("GET")){
+    String command;
+    for(int i=4;i<req.length();i++){
+      if(req[i] == ' '){
+        command = req.substring(4,i);
+        break;
+      }
+    }
+    Serial.println(command);
+    if(command == "/thermos"){
+      sendOKHeader(client);     
+      for(int i=0;i<4;i++){
+        client.println("Thermocouple: " + String(i+1) + "<br/>");
+        client.println("Temperature: ");
+        client.println(celsiusReadings[i]);
+        client.println(" C<br/>");
+        client.println("Error Code: ");
+        client.println(thermoErrorCodes[i]);
+        client.println("<br/>");
+      }   
+    }
+    else{
+      send404(client);
+    }
+  }
+  else if(req.startsWith("POST")){
+    
+  }
+  else{
+    send404(client);
+  }
+}
+
+void setup(){
+  Serial.begin(9600);
   /* init reading time */
   deltaReading = millis();
-  
+ 
+  /* start up the web server */ 
   Ethernet.begin(mac, ip);
   server.begin();
-  
+
   /* wait for MAX chips to stabilize and ethernet shield to setup */
   delay(1000);
 }
@@ -76,7 +131,7 @@ void loop(){
     deltaReading = millis();
   }
   
-   listenForClients();  
+  listenForClients();  
 }
 
 void listenForClients(){
@@ -85,28 +140,15 @@ void listenForClients(){
   if(client){
     //an http request ends with a blank line
     boolean currentLineIsBlank = true;
-    
+    int index = 0;
     while(client.connected()){
       if(client.available()){
         char c = client.read();
-        // if you've gotten to the end of the line (received a newline
-        // character) and the line is blank, the http request has ended,
-        // so you can send a reply
+        
+        requestBuffer[index++] = c;
+
         if (c == '\n' && currentLineIsBlank) {
-          // send a standard http response header
-          client.println("HTTP/1.1 200 OK");
-          client.println("Content-Type: text/html");
-          client.println();
-          
-          for(int i=0;i<4;i++){
-            client.print("Thermocouple " + String(i) + ":<br/>");
-            client.print("Temperature: ");
-            client.print(celsiusReadings[i]);
-            client.print(" degrees C <br/>");
-            client.print("Error: ");
-            client.print(thermoErrorCodes[i]);
-            client.print("<br/>");
-          }
+          handleRequest(client);
           break;
         }
         if (c == '\n') {
@@ -125,3 +167,5 @@ void listenForClients(){
     client.stop();
   } 
 }
+
+
