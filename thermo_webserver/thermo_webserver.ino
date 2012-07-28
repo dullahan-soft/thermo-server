@@ -43,9 +43,9 @@ byte mac[]     = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED};
 byte ip[]      = { 192,168,1,20 };
 byte gateway[] = { 192,168,1,1};	
 byte subnet[]  = { 255, 255, 255, 0 };
-Server server(80);
+EthernetServer server(80);
 
-void send404(Client client) {
+void send404(EthernetClient client) {
   client.println("HTTP/1.1 404 OK");
   client.println("Content-Type: text/html");
   client.println("Connnection: close");
@@ -54,13 +54,13 @@ void send404(Client client) {
   client.println("<html><body>404</body></html>");
 }
 
-void sendOKHeader(Client client){
+void sendOKHeader(EthernetClient client){
   client.println("HTTP/1.1 200 OK");
   client.println("Content-Type: text/html");
   client.println();
 }
 
-void handleRequest(Client client){
+void handleRequest(EthernetClient client){
   String req = String(requestBuffer);
   String command;
   
@@ -79,7 +79,7 @@ void handleRequest(Client client){
         client.println("Thermocouple: " + String(i+1) + "<br/>");
         client.println("Temperature: ");
         client.println(celsiusReadings[i]);
-        client.println(" C<br/>");
+        client.println(" C<br>");
         client.println("Error Code: ");
         client.println(thermoErrorCodes[i]);
         client.println("<br/>");
@@ -103,7 +103,7 @@ void setup(){
   deltaReading = millis();
  
   /* start up the web server */ 
-  Ethernet.begin(mac, ip);
+  Ethernet.begin(mac);
   server.begin();
 
   /* wait for MAX chips to stabilize and ethernet shield to setup */
@@ -135,7 +135,7 @@ void loop(){
 }
 
 void listenForClients(){
-  Client client = server.available();
+  EthernetClient client = server.available();
   
   if(client){
     //an http request ends with a blank line
