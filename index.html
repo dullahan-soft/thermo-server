@@ -35,7 +35,7 @@
 <h3>Software</h3>
 
 <ul>
-<li>The thermo-server sketch which you can download at <a href="https://github.com/dullahan-soft/thermo-server/downloads">github</a>.</li>
+<li>The thermo-server sketch which you can download via one of the links in the right column.</li>
 <li>Adafruit's <a href="https://github.com/adafruit/Adafruit-MAX31855-library">MAX31855 Arduino library</a>
 </li>
 </ul><h3>Hardware</h3>
@@ -51,11 +51,19 @@
 <li>Breadboard and wires</li>
 </ul><h3>Development Environment</h3>
 
-<p>In order to build the sketch and load it onto the Arduino you will have to download and install the <a href="http://arduino.cc/hu/Main/Software">Arduino IDE</a>.  Once downloaded follow the setup steps: <a href="http://arduino.cc/en/Guide/Windows">Windows</a>, <a href="http://arduino.cc/en/Guide/MacOSX">Mac OS</a>, or <a href="http://www.arduino.cc/playground/Learning/Linux">Linux</a>.  After you have the IDE installed, then install the MAX31855 library.  More information about installing Arduino libraries can be found at the bottom of this <a href="http://www.ladyada.net/library/arduino/libraries.html">library page</a>.</p>
+<p>In order to build the sketch and load it onto the Arduino you will have to download and install the <a href="http://arduino.cc/hu/Main/Software">Arduino IDE</a>.  Once downloaded follow the setup steps: </p>
 
-<h3>Build Sketch</h3>
+<ul>
+<li><a href="http://arduino.cc/en/Guide/Windows">Windows</a></li>
+<li><a href="http://arduino.cc/en/Guide/MacOSX">Mac OS</a></li>
+<li>
+<a href="http://www.arduino.cc/playground/Learning/Linux">Linux</a>.<br>
+After you have the IDE installed, then install the MAX31855 library.  More information about installing Arduino libraries can be found at the bottom of this <a href="http://www.ladyada.net/library/arduino/libraries.html">library page</a>.</li>
+</ul><h3>Build Sketch</h3>
 
-<p>Open the thermo-server sketch which you have downloaded.  Connect the Arduino Mega to your computer with a USB cable.  Hit the Upload button in the IDE to compile and upload the sketch to the Arduino.  Problems?  Did you select the correct serial port under Tools-&gt;Serial Port and the correct board under Tools-&gt;Board-&gt;Arduino Mega 2560 or Mega ADK?  Once the sketch is successfully uploaded unplug the board, add the Ethernet shield, and then plug in an Ethernet cable (the other end being connected somewhere like your router).  Power up your Arduino either via USB or a power cable and hunt down the Arduino's IP via your router's web interface, fancy command line fun, or a brute force search in your browser address bar.  With the address try hitting the stats page (if your IP was 192.168.1.5 it would be 192.168.1.5/stats) and you should see a simple uptime field.</p>
+<p>Open the thermo-server sketch which you have downloaded.  Connect the Arduino Mega to your computer with a USB cable.  Hit the Upload button in the IDE to compile and upload the sketch to the Arduino.  Problems?  Did you select the correct serial port under Tools-&gt;Serial Port and the correct board under Tools-&gt;Board-&gt;Arduino Mega 2560 or Mega ADK?  Once the sketch is successfully uploaded then unplug the board, add the Ethernet shield, and finally plug in an Ethernet cable (the other end being connected somewhere like your router).  </p>
+
+<p>Power up your Arduino either via USB or a power cable and hunt down the Arduino's IP via your router's web interface, fancy command line fun, or a brute force search in your browser address bar.  With the address try hitting the stats page (if your IP was 192.168.1.5 it would be 192.168.1.5/stats) and you should see a simple uptime field.</p>
 
 <h4>Wiring</h4>
 
