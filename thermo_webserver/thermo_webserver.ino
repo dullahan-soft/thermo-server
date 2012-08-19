@@ -1,8 +1,13 @@
 /* 
 *  Thermo Webserver
 * 
-*  Serves temp readings from 4 thermocouples as html.
+*  Serves temperature readings from 4 thermocouples and one analog temperature sensor as html.
 *  Temp readings are updated at least once a second.
+*
+*  The following routes are supported:
+*    /stats     - prints the uptime
+*    /thermos   - prints all temperature readings
+*    /pump      - prints the current state of the pump ON/OFF
 *
 *  created July 27, 2012
 *  by Chris Cacciatore (chris.cacciatore bat-'b' dullahansoft.com)
@@ -18,29 +23,33 @@
 /* this is how often we will check if we need to change the state of the pump */
 #define READING_PUMP_INTERVAL 60000
 
-/* the error value when checking if the pump should be activated */
-#define E 5
+/* chip select pins used for thermos */
+#define CS1 20
+#define CS2 21
+#define CS3 22
+#define CS4 24
+
+/* common clock and data pins for thermos */
+#define DO  3
+#define CLK 5
+
+/* temperature threshold for the pump in farenheit */
+#define PUMP_THRESHOLD 180
 
 /* pin that controls the pump switch */
 #define PUMP_CTRL 31
 
-/* common clock and query pins for the thermos */
-int thermoCommonCLK = 2;
-int thermoCommonD0  = 5;
-
-/* each thermo gets its own data pin */
-int thermo1CS = 7;
-int thermo2CS = 9;
-int thermo3CS = 11;
-int thermo4CS = 13;
+/* aref for the analog sensor */
+#define AREF 3.3
 
 /* setup thermos */
-Adafruit_MAX31855 thermo1(thermoCommonCLK, thermo1CS, thermoCommonD0);
-Adafruit_MAX31855 thermo2(thermoCommonCLK, thermo2CS, thermoCommonD0);
-Adafruit_MAX31855 thermo3(thermoCommonCLK, thermo3CS, thermoCommonD0);
-Adafruit_MAX31855 thermo4(thermoCommonCLK, thermo4CS, thermoCommonD0);
+Adafruit_MAX31855 thermo1(CLK, CS1, DO);
+Adafruit_MAX31855 thermo2(CLK, CS2, DO);
+Adafruit_MAX31855 thermo3(CLK, CS3, DO);
+Adafruit_MAX31855 thermo4(CLK, CS4, DO);
 
 double tempReadings[4];
+double roomTemp;
 int    thermoErrorCodes[4];
 
 /* timers */
@@ -71,6 +80,7 @@ void send404(EthernetClient client) {
 void sendOKHeader(EthernetClient client){
   client.println("HTTP/1.1 200 OK");
   client.println("Content-Type: text/html");
+  client.println("Access-Control-Allow-Origin: *");
   client.println();
 }
 
@@ -97,24 +107,57 @@ void handleRequest(EthernetClient client){
         client.println(thermoErrorCodes[i]);
         client.println("<br/>");
       }   
+      
+      client.print("Room Temperature: ");
+      client.print(roomTemp);
+      client.println(" F<br>");
+     
+    }
+    else if(command == "/thermos.json"){
+      sendOKHeader(client);
+      
+      client.println("{[");
+      for(int i=0;i<4;i++){
+        client.println("{\"type\": \"thermocouple\",");
+        client.println("\"temp\": ");
+        client.println(tempReadings[i]);
+        client.println(",");
+        client.println("\"error\": ");
+        client.println(thermoErrorCodes[i]);
+        client.println("},");
+      }   
+      client.println("{\"type\": \"sensor\",");
+      client.println("\"temp\": ");
+      client.print(roomTemp);
+      client.println(",");
+      client.println("\"error\": ");
+      client.println(0);
+      client.println("}]}");
     }
     else if(command == "/pump"){
       sendOKHeader(client);
       client.print("Pump is ");
       client.println(pumpIt ? "ON" : "OFF"); 
     }
-    else if(command == "/stats"){
+    else if(command == "/pump.json"){
       sendOKHeader(client);
+      client.print("{\"state\": ");
+      client.print(pumpIt ? "ON" : "OFF");
+      client.print("}");
+    }
+    else if(command == "/stats"){
       client.print("Up for ");
       client.print((millis()-d0)/1000);
       client.println(" s");
     }
+   else if(command == "/stats.json"){
+      client.print("{\"time\":");
+      client.print((millis()-d0)/1000);
+      client.println("}");
+    }
     else{
       send404(client);
     }
-  }
-  else if(req.startsWith("POST")){
-    
   }
   else{
     send404(client);
@@ -137,6 +180,9 @@ void setup(){
   pumpIt = false;
   digitalWrite(PUMP_CTRL,LOW);
   
+  /* set reference for the analog sensor */
+  analogReference(AREF);
+  
   /* wait for MAX chips to stabilize and ethernet shield to setup */
   delay(1000);
 }
@@ -146,6 +192,11 @@ float celsiusToFarenheit(float t){
   t /= 5.0;
   t += 32;
   return t;
+}
+
+float readRoomTemp(){
+  float voltage = (analogRead(0) * AREF)/1024.0;
+  return celsiusToFarenheit((voltage - 0.5) * 100);
 }
 
 void loop(){
@@ -167,17 +218,19 @@ void loop(){
     if(isnan(tempReadings[3])){
       thermoErrorCodes[3] = thermo4.readError();  
     }
+    roomTemp = readRoomTemp();
+    
     deltaReading = millis();
   }
   if(millis() - deltaPumpReading >= READING_PUMP_INTERVAL){
     pumpIt = false;
     /* turn on pump if any thermo is greater than room temp with error E */
-    for(int i=0; i<4; i++){
+    /*for(int i=0; i<4; i++){
       if(tempReadings[i] - celsiusToFarenheit(thermo1.readInternal()) >= E){
         pumpIt = true;
         break;
       }
-    }
+    }*/
     if(pumpIt){
       Serial.println("high");
       digitalWrite(PUMP_CTRL,HIGH);  
@@ -225,5 +278,4 @@ void listenForClients(){
     client.stop();
   } 
 }
-
 
