@@ -30,7 +30,7 @@
         <section id="main-content">
           <h3>Summary</h3>
 
-<p>This page contains information on how to setup and install an Arduino thermo-server.  This is a project I completed for a friend who wanted to automate the hot water pump attached to his new masonry heater.  Most of the documentation is for his reference, but there is probably still a good amount of information here to take away if you are considering or starting a similar project.</p>
+<p>This page contains information on how to setup and install an Arduino thermo-server, a project I completed for a friend who wanted to automate the water pump attached to his masonry heater.  Most of the documentation is for his reference, but there is probably still a good amount of information here to take away if you are considering or starting a similar project.</p>
 
 <h3>Software</h3>
 
@@ -76,18 +76,40 @@
 
 <h3>Wiring</h3>
 
-<p>Nothing fancy going on here.  The four thermocouple boards are sharing power, ground, clock, and data lines; although, each chip has its own chip select line.  Notice each thermocouple has a 0.1 uF capacitor across it as well.  The capacitor's purpose is to reduce noise and without them the readings are indeed noisy.  Adafruit started shipping the MAX boards with capacitors now as well.</p>
+<p>Nothing fancy going on here.  The four thermocouple boards are sharing power, ground, clock, and data lines; although, each chip has its own chip select line.  Notice each thermocouple has a 0.1 uF capacitor across it as well.  The capacitor's purpose is to reduce noise and without them the readings are indeed noisy.  If you are using the sketch without modifications, then note the defines at the top where the pins needed for talking to the MAX boards, temperature sensor, and Powertail are defined:</p>
 
-<p>As for the Powertail switch it is simply connected to a digital pin (30) and ground.</p>
+<pre><code>/* this is how often we will query the thermos for readings */
+#define READING_INTERVAL 1000
+
+/* this is how often we will check if we need to change the state of the pump */
+#define READING_PUMP_INTERVAL 60000
+
+/* chip select pins used for thermos */
+#define CS1 20
+#define CS2 21
+#define CS3 22
+#define CS4 24
+
+/* common clock and data pins for thermos */
+#define DO  3
+#define CLK 5
+
+/* temperature threshold for the pump in farenheit */
+#define PUMP_THRESHOLD 180
+
+/* pin that controls the pump switch */
+#define PUMP_CTRL 30
+</code></pre>
 
 <h3>Dashboard</h3>
 
 <p>In the repository under the dash directory lives a little AngularJS app that can pull data from the Arduino web-server.  The dash is good for debugging, displays a graph of the readings, general server state, and can issue pump commands.  Note, the dash is all client-side so the temperature data it pulls is not persistent.  You'll want to set up a data server elsewhere and if you are so inclined reconfigure the dash to point to there at least for the temperature readings.</p>
 
+<p>Included within the dash directory is also a sinatra app that I used while building and testing.  You could use this or your web-server of choice.  Note, that the dash.html file must be served and accessing the file in the browser via the file system will not work.</p>
+
 <h3>Extra</h3>
 
-<p>Here is a pic of the three MAX boards I burned while working on this project:
-<img src="https://raw.github.com/dullahan-soft/thermo-server/gh-pages/images/fried.jpg" alt="fried" size="300x300"></p>
+<p>Here is a pic of the three MAX boards I burned while working on this project:</p>
 
 <h3>Authors and Contributors</h3>
 
