@@ -20,7 +20,7 @@
     <header>
       <div class="inner">
         <h1>Arduino Thermo-server</h1>
-        <h2>A project for automating a water pump for a masonry heater.</h2>
+        <h2>A project for automating a water pump and monitoring a masonry heater.</h2>
         <a href="https://github.com/dullahan-soft/thermo-server" class="button"><small>View project on</small>GitHub</a>
       </div>
     </header>
@@ -30,7 +30,7 @@
         <section id="main-content">
           <h3>Summary</h3>
 
-<p>This page contains information on how to setup and install an Arduino thermo-server.  This is a project I completed for a friend who wanted to automate the hot water pump attached to his new masonry heater.</p>
+<p>This page contains information on how to setup and install an Arduino thermo-server.  This is a project I completed for a friend who wanted to automate the hot water pump attached to his new masonry heater.  Most of the documentation is for his reference, but there is probably still a good amount of information here to take away if you are considering or starting a similar project.</p>
 
 <h3>Software</h3>
 
@@ -38,6 +38,7 @@
 <li>The thermo-server sketch which you can download via one of the links in the right column.</li>
 <li>Adafruit's <a href="https://github.com/adafruit/Adafruit-MAX31855-library">MAX31855 Arduino library</a>
 </li>
+<li>Dashboard which is included with the thermo-server sketch.</li>
 </ul><h3>Hardware</h3>
 
 <ul>
@@ -61,7 +62,15 @@
 
 <h3>Build Sketch</h3>
 
-<p>Open the thermo-server sketch which you have downloaded.  Connect the Arduino Mega to your computer with a USB cable.  Hit the Upload button in the IDE to compile and upload the sketch to the Arduino.  Problems?  Did you select the correct serial port under Tools-&gt;Serial Port and the correct board under Tools-&gt;Board-&gt;Arduino Mega 2560 or Mega ADK?  Once the sketch is successfully uploaded then unplug the board, add the Ethernet shield, and finally plug in an Ethernet cable (the other end being connected somewhere like your router).  </p>
+<p>Open the thermo-server sketch which you have downloaded.  Connect the Arduino Mega to your computer with a USB cable.  Hit the Upload button in the IDE to compile and upload the sketch to the Arduino.  </p>
+
+<pre><code>Problems?  
+
+Did you select the correct serial port under Tools-&gt;Serial Port?
+Do you have the correct board selected under Tools-&gt;Board-&gt;Arduino Mega 2560 or Mega ADK?  
+</code></pre>
+
+<p>Once the sketch is successfully uploaded then unplug the board, add the Ethernet shield, and finally plug in an Ethernet cable (the other end being connected somewhere like your router).  </p>
 
 <p>Power up your Arduino either via USB or a power cable and hunt down the Arduino's IP via your router's web interface, fancy command line fun, or a brute force search in your browser address bar.  With the address try hitting the stats page (if your IP was 192.168.1.5 it would be 192.168.1.5/stats) and you should see a simple uptime field.</p>
 
