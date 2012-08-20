@@ -64,20 +64,25 @@
 
 <p>Open the thermo-server sketch which you have downloaded.  Connect the Arduino Mega to your computer with a USB cable.  Hit the Upload button in the IDE to compile and upload the sketch to the Arduino.  </p>
 
+<h4>Problems?</h4>
+
 <ul>
-<li>Problems?<br>
-** Did you select the correct serial port under Tools-&gt;Serial Port?
-** Do you have the correct board selected under Tools-&gt;Board-&gt;Arduino Mega 2560 or Mega ADK?<br>
+<li>Did you select the correct serial port under Tools-&gt;Serial Port?</li>
+<li>Do you have the correct board selected under Tools-&gt;Board-&gt;Arduino Mega 2560 or Mega ADK?<br>
 </li>
 </ul><p>Once the sketch is successfully uploaded then unplug the board, add the Ethernet shield, and finally plug in an Ethernet cable (the other end being connected somewhere like your router).  </p>
 
 <p>Power up your Arduino either via USB or a power cable and hunt down the Arduino's IP via your router's web interface, fancy command line fun, or a brute force search in your browser address bar.  With the address try hitting the stats page (if your IP was 192.168.1.5 it would be 192.168.1.5/stats) and you should see a simple uptime field.</p>
 
-<h4>Wiring</h4>
+<h3>Wiring</h3>
 
 <p>Nothing fancy going on here.  The four thermocouple boards are sharing power, ground, clock, and data lines; although, each chip has its own chip select line.  Notice each thermocouple has a 0.1 uF capacitor across it as well.  The capacitor's purpose is to reduce noise and without them the readings are indeed noisy.  Adafruit started shipping the MAX boards with capacitors now as well.</p>
 
-<p>The Powertail switch is simply connected to a digital pin and ground.</p>
+<p>As for the Powertail switch it is simply connected to a digital pin (30) and ground.</p>
+
+<h3>Dashboard</h3>
+
+<p>In the repository under the dash directory lives a little AngularJS app that can pull data from the Arduino web-server.  The dash is good for debugging, displays a graph of the readings, general server state, and can issue pump commands.  Note, the dash is all client-side so the temperature data it pulls is not persistent.  You'll want to set up a data server elsewhere and if you are so inclined reconfigure the dash to point to there at least for the temperature readings.</p>
 
 <h3>Authors and Contributors</h3>
 
