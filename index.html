@@ -51,7 +51,7 @@
 <li><a href="https://www.adafruit.com/products/435">Passive PoE Injector Cable Set</a></li>
 <li>Breadboard and wires</li>
 <li>A source of heat perhaps a candle for testing and romantic project time:
-<a href="https://raw.github.com/dullahan-soft/thermo-server/master/images/romantic.jpg"><img src="https://raw.github.com/dullahan-soft/thermo-server/master/images/romantic.jpg" alt="romance"></a>
+<img src="https://raw.github.com/dullahan-soft/thermo-server/master/images/romantic.jpg" alt="romance">
 </li>
 </ul><h3>Development Environment</h3>
 
@@ -79,10 +79,10 @@
 
 <h3>Wiring</h3>
 
-<p><a href="https://raw.github.com/dullahan-soft/thermo-server/master/images/overhead1.jpg"><img src="https://raw.github.com/dullahan-soft/thermo-server/master/images/overhead1.jpg" alt="overhead&gt;&lt;/a&gt;
-Nothing fancy going on here.  The four thermocouple boards are sharing power, ground, clock, and data lines; although, each chip has its own chip select line.  Notice each thermocouple has a 0.1 uF capacitor across it as well.  The capacitor's purpose is to reduce noise and without them the readings are indeed noisy.  If you are using the sketch without modifications, then note the defines at the top where the pins needed for talking to the MAX boards, temperature sensor, and Powertail are defined:&lt;/p&gt;
+<p><img src="https://raw.github.com/dullahan-soft/thermo-server/master/images/overhead1.jpg" alt="overhead">
+Nothing fancy going on here.  The four thermocouple boards are sharing power, ground, clock, and data lines; although, each chip has its own chip select line.  Notice each thermocouple has a 0.1 uF capacitor across it as well.  The capacitor's purpose is to reduce noise and without them the readings are indeed noisy.  If you are using the sketch without modifications, then note the defines at the top where the pins needed for talking to the MAX boards, temperature sensor, and Powertail are defined:</p>
 
-&lt;pre&gt;&lt;code&gt;/* this is how often we will query the thermos for readings */
+<pre><code>/* this is how often we will query the thermos for readings */
 #define READING_INTERVAL 1000
 
 /* this is how often we will check if we need to change the state of the pump */
@@ -103,30 +103,30 @@ Nothing fancy going on here.  The four thermocouple boards are sharing power, gr
 
 /* pin that controls the pump switch */
 #define PUMP_CTRL 30
-&lt;/code&gt;&lt;/pre&gt;
+</code></pre>
 
-&lt;p&gt;Here is a close up of those very same pins being used:
-&lt;a href="><img src="https://raw.github.com/dullahan-soft/thermo-server/master/images/overhead2.jpg" alt="closeup"></a></p>
+<p>Here is a close up of those very same pins being used:
+<img src="https://raw.github.com/dullahan-soft/thermo-server/master/images/overhead2.jpg" alt="closeup"></p>
 
 <h3>Dashboard</h3>
 
-<p><a href="https://raw.github.com/dullahan-soft/thermo-server/master/images/dash-pic.png"><img src="https://raw.github.com/dullahan-soft/thermo-server/master/images/dash-pic.png" alt="dash&gt;&lt;/a&gt;
-In the repository under the dash directory lives a little AngularJS app that can pull data from the Arduino web-server.  The dash is good for debugging, displays a graph of the readings, general server state, and can issue pump commands.  Note, the dash is all client-side so the temperature data it pulls is not persistent.  You'll want to set up a data server elsewhere and if you are so inclined reconfigure the dash to point to there at least for the temperature readings.&lt;/p&gt;
+<p><img src="https://raw.github.com/dullahan-soft/thermo-server/master/images/dash-pic.png" alt="dash">
+In the repository under the dash directory lives a little AngularJS app that can pull data from the Arduino web-server.  The dash is good for debugging, displays a graph of the readings, general server state, and can issue pump commands.  Note, the dash is all client-side so the temperature data it pulls is not persistent.  You'll want to set up a data server elsewhere and if you are so inclined reconfigure the dash to point to there at least for the temperature readings.</p>
 
-&lt;p&gt;Included within the dash directory is also a sinatra app that I used while building and testing.  You could use this or your web-server of choice.  Note, that the dash.html file must be served and accessing the file in the browser via the file system will not work.&lt;/p&gt;
+<p>Included within the dash directory is also a sinatra app that I used while building and testing.  You could use this or your web-server of choice.  Note, that the dash.html file must be served and accessing the file in the browser via the file system will not work.</p>
 
-&lt;h3&gt;Extra&lt;/h3&gt;
+<h3>Extra</h3>
 
-&lt;p&gt;Here is a pic of the three MAX boards I burned while working on this project:
-&lt;a href="><img src="https://raw.github.com/dullahan-soft/thermo-server/master/images/fried.jpg" alt="fried&gt;&lt;/a&gt;&lt;/p&gt;
+<p>Here is a pic of the three MAX boards I burned while working on this project:
+<img src="https://raw.github.com/dullahan-soft/thermo-server/master/images/fried.jpg" alt="fried"></p>
 
-&lt;h3&gt;Authors and Contributors&lt;/h3&gt;
+<h3>Authors and Contributors</h3>
 
-&lt;p&gt;Chris Cacciatore (@cacciatc)&lt;/p&gt;
+<p>Chris Cacciatore (<a href="https://github.com/cacciatc" class="user-mention">@cacciatc</a>)</p>
 
-&lt;h3&gt;Support or Contact&lt;/h3&gt;
+<h3>Support or Contact</h3>
 
-&lt;p&gt;&lt;a href=">chris.cacciatore@dullahansoft.com</a></p>
+<p><a href="mailto:chris.cacciatore@dullahansoft.com">chris.cacciatore@dullahansoft.com</a></p>
         </section>
 
         <aside id="sidebar">
