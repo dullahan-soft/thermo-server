@@ -34,10 +34,10 @@
 #define CLK 5
 
 /* temperature threshold for the pump in farenheit */
-#define PUMP_THRESHOLD 180
+#define PUMP_THRESHOLD 180.0
 
 /* pin that controls the pump switch */
-#define PUMP_CTRL 31
+#define PUMP_CTRL 30
 
 /* aref for the analog sensor */
 #define AREF 3.3
@@ -60,6 +60,7 @@ float d0;
 char requestBuffer[1024];
 
 boolean pumpIt;
+boolean manualPumping;
 
 /* http server vars */
 byte mac[]     = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED};
@@ -116,7 +117,7 @@ void handleRequest(EthernetClient client){
     else if(command == "/thermos.json"){
       sendOKHeader(client);
       
-      client.println("{[");
+      client.println("[");
       for(int i=0;i<4;i++){
         client.println("{\"type\": \"thermocouple\",");
         client.println("\"temp\": ");
@@ -132,7 +133,7 @@ void handleRequest(EthernetClient client){
       client.println(",");
       client.println("\"error\": ");
       client.println(0);
-      client.println("}]}");
+      client.println("}]");
     }
     else if(command == "/pump"){
       sendOKHeader(client);
@@ -142,21 +143,48 @@ void handleRequest(EthernetClient client){
     else if(command == "/pump.json"){
       sendOKHeader(client);
       client.print("{\"state\": ");
-      client.print(pumpIt ? "ON" : "OFF");
+      client.print(pumpIt ? "\"ON\"" : "\"OFF\"");
       client.print("}");
     }
     else if(command == "/stats"){
+      sendOKHeader(client);
       client.print("Up for ");
       client.print((millis()-d0)/1000);
       client.println(" s");
     }
    else if(command == "/stats.json"){
+      sendOKHeader(client);
       client.print("{\"time\":");
       client.print((millis()-d0)/1000);
       client.println("}");
     }
     else{
       send404(client);
+    }
+  }
+  else if(req.startsWith("POST")){
+    String command;
+    for(int i=5;i<req.length();i++){
+      if(req[i] == ' '){
+        command = req.substring(5,i);
+        break;
+      }
+    }
+    
+    if(command == "/pump/on"){
+      sendOKHeader(client);
+      manualPumping = true;
+      pumpIt = true;
+      digitalWrite(PUMP_CTRL,HIGH);
+    }
+    else if(command == "/pump/off"){
+      sendOKHeader(client);
+      pumpIt = false;
+      manualPumping = false;
+      digitalWrite(PUMP_CTRL,LOW); 
+    }
+    else{
+      send404(client); 
     }
   }
   else{
@@ -178,6 +206,7 @@ void setup(){
   /* setup pin that will be controlling the pump */
   pinMode(PUMP_CTRL,OUTPUT);
   pumpIt = false;
+  manualPumping = false;
   digitalWrite(PUMP_CTRL,LOW);
   
   /* set reference for the analog sensor */
@@ -223,21 +252,21 @@ void loop(){
     deltaReading = millis();
   }
   if(millis() - deltaPumpReading >= READING_PUMP_INTERVAL){
-    pumpIt = false;
-    /* turn on pump if any thermo is greater than room temp with error E */
-    /*for(int i=0; i<4; i++){
-      if(tempReadings[i] - celsiusToFarenheit(thermo1.readInternal()) >= E){
-        pumpIt = true;
-        break;
+    if(!manualPumping){
+      pumpIt = false;
+      /* turn on pump if any thermo is greater than PUMP_THRESHOLD */
+      for(int i=0; i<4; i++){
+        if(tempReadings[i] >= PUMP_THRESHOLD){
+          pumpIt = true;
+          break;
+        }
       }
-    }*/
-    if(pumpIt){
-      Serial.println("high");
-      digitalWrite(PUMP_CTRL,HIGH);  
-    }
-    else{
-      Serial.println("low");
-      digitalWrite(PUMP_CTRL,LOW);
+      if(pumpIt){
+        digitalWrite(PUMP_CTRL,HIGH);  
+      }
+      else{
+        digitalWrite(PUMP_CTRL,LOW);
+      }
     }
     deltaPumpReading = millis();
   }
