@@ -15,7 +15,10 @@
 
 #include <SPI.h>
 #include <Ethernet.h>
+#include <Wire.h>
 #include "Adafruit_MAX31855.h"
+#include "Adafruit_MCP23017.h"
+#include "Adafruit_RGBLCDShield.h"
 
 /* this is how often we will query the thermos for readings */
 #define READING_INTERVAL 1000
@@ -23,9 +26,15 @@
 /* this is how often we will check if we need to change the state of the pump */
 #define READING_PUMP_INTERVAL 60000
 
+/* ms to wait before querying LCD buttons again*/
+#define BUTTON_BOUNCE 200
+
+/*LCD power saver */
+#define LCD_OFF_AFTER 60000
+
 /* chip select pins used for thermos */
-#define CS1 20
-#define CS2 21
+#define CS1 16
+#define CS2 17
 #define CS3 22
 #define CS4 24
 
@@ -48,14 +57,20 @@ Adafruit_MAX31855 thermo2(CLK, CS2, DO);
 Adafruit_MAX31855 thermo3(CLK, CS3, DO);
 Adafruit_MAX31855 thermo4(CLK, CS4, DO);
 
-double tempReadings[4];
-double roomTemp;
-int    thermoErrorCodes[4];
+// LCD
+Adafruit_RGBLCDShield lcd = Adafruit_RGBLCDShield();
+int currentReading = 0;
+
+double tempReadings[5];
+int    thermoErrorCodes[5];
+String instrumentNames[5] = {"Firebox", "Chimney", "Water Tank", "Oven", "Ambient"};
 
 /* timers */
 float deltaReading;
 float deltaPumpReading;
 float d0;
+float deltaLCD;
+float btnTimer;
 
 char requestBuffer[1024];
 
@@ -110,7 +125,7 @@ void handleRequest(EthernetClient client){
       }   
       
       client.print("Room Temperature: ");
-      client.print(roomTemp);
+      client.print(tempReadings[4]);
       client.println(" F<br>");
      
     }
@@ -129,7 +144,7 @@ void handleRequest(EthernetClient client){
       }   
       client.println("{\"type\": \"sensor\",");
       client.println("\"temp\": ");
-      client.print(roomTemp);
+      client.print(tempReadings[4]);
       client.println(",");
       client.println("\"error\": ");
       client.println(0);
@@ -193,7 +208,6 @@ void handleRequest(EthernetClient client){
 }
 
 void setup(){
-  Serial.begin(9600);
   /* init reading time */
   deltaReading = millis();
   deltaPumpReading = millis();
@@ -211,6 +225,15 @@ void setup(){
   
   /* set reference for the analog sensor */
   analogReference(AREF);
+  
+  /* setup the LCD */
+  lcd.begin(16, 2);
+  currentReading = 0;
+  lcd.noDisplay();
+  lcd.setBacklight(0x0);
+  deltaLCD = millis();
+  btnTimer = millis();
+  
   
   /* wait for MAX chips to stabilize and ethernet shield to setup */
   delay(1000);
@@ -247,7 +270,7 @@ void loop(){
     if(isnan(tempReadings[3])){
       thermoErrorCodes[3] = thermo4.readError();  
     }
-    roomTemp = readRoomTemp();
+    tempReadings[4] = readRoomTemp();
     
     deltaReading = millis();
   }
@@ -269,6 +292,35 @@ void loop(){
       }
     }
     deltaPumpReading = millis();
+  }
+  
+  /*check if user is requesting LCD output */
+  uint8_t buttons = lcd.readButtons();
+  if(buttons && millis() - btnTimer > BUTTON_BOUNCE){
+    lcd.display();
+    lcd.setBacklight(0x7);
+    lcd.clear();
+    if(buttons & BUTTON_RIGHT){
+      currentReading += 1;
+      currentReading = currentReading % 5;
+    }
+    else if(buttons & BUTTON_LEFT){
+      currentReading -= 1;
+      currentReading = currentReading < 0 ? 4 : currentReading;
+    }
+    btnTimer = millis();
+    deltaLCD = millis();
+  }
+  if(millis() - deltaLCD > LCD_OFF_AFTER){
+    lcd.noDisplay();
+    lcd.setBacklight(0x0); 
+  }
+  else{
+    lcd.setCursor(0,0);
+    lcd.print(instrumentNames[currentReading]);
+    lcd.setCursor(3,1);
+    lcd.print(tempReadings[currentReading]);
+    lcd.print(" F");
   }
   
   listenForClients();  
