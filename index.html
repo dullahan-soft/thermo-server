@@ -20,7 +20,7 @@
     <header>
       <div class="inner">
         <h1>Arduino Thermo-server</h1>
-        <h2>A project for automating a water pump and monitoring a masonry heater.</h2>
+        <h2>Automate a masonry heater with an Arduino.</h2>
         <a href="https://github.com/dullahan-soft/thermo-server" class="button"><small>View project on</small>GitHub</a>
       </div>
     </header>
@@ -30,95 +30,69 @@
         <section id="main-content">
           <h3>Summary</h3>
 
-<p>This page contains information on how to setup and install an Arduino thermo-server, a project I completed for a friend who wanted to automate the water pump attached to his masonry heater.  Most of the documentation is for his reference, but there is probably still a good amount of information here to take away if you are considering or starting a similar project.</p>
+<p><img src="https://raw.github.com/dullahan-soft/thermo-server/master/images/heater-pre.jpg" size="480x480">
+A friend of mine recently installed a <a href="http://en.wikipedia.org/wiki/Masonry_heater">masonry heater</a> in his home along with an attached oven and hot water tank.  He asked me if I could help him automate a water pump that passes hot water from the masonry heater to his hot water heater using temperature readings from the masonry heater as well as logging these temperature readings for later analysis.  </p>
 
-<h3>Software</h3>
+<p>The rest of this page contains details on how we automated his system including Arduino code, a data visualization web app, and a parts list.</p>
 
-<ul>
-<li>The thermo-server sketch which you can download via one of the links in the right column.</li>
-<li>Adafruit's <a href="https://github.com/adafruit/Adafruit-MAX31855-library">MAX31855 Arduino library</a>
-</li>
-<li>Dashboard which is included with the thermo-server sketch.</li>
-</ul><h3>Hardware</h3>
+<h3>System Description</h3>
 
-<ul>
-<li>4 Adafruit <a href="http://adafruit.com/products/269">MAX31855 Arduino boards</a> assembled</li>
-<li>4 <a href="http://adafruit.com/products/270">Type-K Thermocouples</a>
-</li>
-<li><a href="https://www.adafruit.com/products/191">Arduino Mega 2560</a></li>
-<li><a href="https://www.adafruit.com/products/201">Arduino Ethernet Shield R3</a></li>
-<li><a href="https://www.adafruit.com/products/268">Powerswitch Tail 2</a></li>
-<li><a href="https://www.adafruit.com/products/435">Passive PoE Injector Cable Set</a></li>
-<li>Breadboard and wires</li>
-<li>A source of heat perhaps a candle for testing and romantic project time:
-<img src="https://raw.github.com/dullahan-soft/thermo-server/master/images/romantic.jpg" alt="romance">
-</li>
-</ul><h3>Development Environment</h3>
+<p><img src="https://raw.github.com/dullahan-soft/thermo-server/master/images/Thermo%20webserver%20schematic.png" size="480x480"></p>
 
-<p>In order to build the sketch and load it onto the Arduino you will have to download and install the <a href="http://arduino.cc/hu/Main/Software">Arduino IDE</a>.  Once downloaded follow the setup steps: </p>
+<p>Following are descriptions for each of the major modules:</p>
+
+<h4>LCD</h4>
 
 <ul>
-<li><a href="http://arduino.cc/en/Guide/Windows">Windows</a></li>
-<li><a href="http://arduino.cc/en/Guide/MacOSX">Mac OS</a></li>
-<li><a href="http://www.arduino.cc/playground/Learning/Linux">Linux</a></li>
-</ul><p>After you have the IDE installed, then install the MAX31855 library.  More information about installing Arduino libraries can be found at the bottom of this <a href="http://www.ladyada.net/library/arduino/libraries.html">library page</a>.</p>
-
-<h3>Build Sketch</h3>
-
-<p>Open the thermo-server sketch which you have downloaded.  Connect the Arduino Mega to your computer with a USB cable.  Hit the Upload button in the IDE to compile and upload the sketch to the Arduino.  </p>
-
-<h4>Problems?</h4>
+<li>We attached a monochrome 16x2 LCD for easy local readings.<br>
+</li>
+<li>You can cycle through the temperature readings using the left and right direction buttons.<br>
+</li>
+<li>The LCD's backlight powers down after a minute of unuse.</li>
+<li>Using Adafruit's LCD backpack and corresponding library, assembling and integrating an LCD was painless.</li>
+</ul><h4>Arduino Mega + Ethernet Shield</h4>
 
 <ul>
-<li>Did you select the correct serial port under Tools-&gt;Serial Port?</li>
-<li>Do you have the correct board selected under Tools-&gt;Board-&gt;Arduino Mega 2560 or Mega ADK?<br>
+<li>We choose the Mega to ensure we had enough pins for future expansions.</li>
+<li>The Arduino is loaded with a web-server that serves system uptime, pump state, and temperature readings both in HTML and JSON formats.</li>
+<li>The web-server uses DHCP.</li>
+</ul><h4>PowerSwitch Tail 2</h4>
+
+<ul>
+<li>To control the water pump we decided to try out the self contained PowerSwitch.</li>
+<li>Interfacing the PowerSwitch with the Arduino only requires two pins, GRND and a digital pin to control the relay.</li>
+<li>The pump is hard-coded to turn on when any of the thermocouple sensors detect a temperature in excess of 180 degress Fahrenheit.</li>
+<li>In order not to thrash the pump we only check once a minute to see if the pump's state should change (although flucuations in and around 180 degrees are probably
+not that great).</li>
+</ul><h4>Sensor Array</h4>
+
+<ul>
+<li>We went with four thermocouples to measure the temperatures in the oven, masonry heater firebox, water tank, and chimney.</li>
+<li>I also added an analog temperature sensor to track the ambient temperature and make sure the Arduino and sensing array don't get too hot!</li>
+<li>Adafruit's MAX31855 boards and corresponding library made interfacing with the thermocouples easy, which is a good thing since dealing with the sensitive thermocouples was a pain in the butt.</li>
+</ul><h4>Data Logging + Visualization</h4>
+
+<ul>
+<li>Originally my friend simply wanted the temperature readings served as HTML which he would scrape with a logging tool like Mango.</li>
+<li>I added JSON support and whipped up a clientside data visualization app as well called "dash" short for "dashboard" not "dachshund".</li>
+</ul><h3>Parts List</h3>
+
+<p>Here is a list of all the hardware used above as well as links to providers we used and recommend:</p>
+
+<ol>
+<li>4 x <a href="https://www.adafruit.com/products/270">K-Type Thermocouples</a>
 </li>
-</ul><p>Once the sketch is successfully uploaded then unplug the board, add the Ethernet shield, and finally plug in an Ethernet cable (the other end being connected somewhere like your router).  </p>
+<li>4 x <a href="http://www.adafruit.com/products/269">MAX31855 Boards</a> (now includes 0.1 uF capacitors)</li>
+<li><a href="https://www.adafruit.com/products/268">PowerSwitch Tail II</a></li>
+<li><a href="http://www.adafruit.com/products/191">Arduino Mega</a></li>
+<li><a href="https://www.adafruit.com/products/201">Arduino Ethernet Shield</a></li>
+<li><a href="http://www.adafruit.com/products/714">Adafruit LCD Shield Kit</a></li>
+<li><a href="http://www.adafruit.com/products/165">TMP36 Analog Temperature Sensor</a></li>
+<li>
+<a href="http://www.adafruit.com/products/435">Passive PoE Injector Cable Set</a> (if you are going to go that route)</li>
+</ol><h3>Software and Dash Demo</h3>
 
-<p>Power up your Arduino either via USB or a power cable and hunt down the Arduino's IP via your router's web interface, fancy command line fun, or a brute force search in your browser address bar.  With the address try hitting the stats page (if your IP was 192.168.1.5 it would be 192.168.1.5/stats) and you should see a simple uptime field.</p>
-
-<h3>Wiring</h3>
-
-<p><img src="https://raw.github.com/dullahan-soft/thermo-server/master/images/overhead1.jpg" alt="overhead">
-Nothing fancy going on here.  The four thermocouple boards are sharing power, ground, clock, and data lines; although, each chip has its own chip select line.  Notice each thermocouple has a 0.1 uF capacitor across it as well.  The capacitor's purpose is to reduce noise and without them the readings are indeed noisy.  If you are using the sketch without modifications, then note the defines at the top where the pins needed for talking to the MAX boards, temperature sensor, and Powertail are defined:</p>
-
-<pre><code>/* this is how often we will query the thermos for readings */
-#define READING_INTERVAL 1000
-
-/* this is how often we will check if we need to change the state of the pump */
-#define READING_PUMP_INTERVAL 60000
-
-/* chip select pins used for thermos */
-#define CS1 20
-#define CS2 21
-#define CS3 22
-#define CS4 24
-
-/* common clock and data pins for thermos */
-#define DO  3
-#define CLK 5
-
-/* temperature threshold for the pump in farenheit */
-#define PUMP_THRESHOLD 180
-
-/* pin that controls the pump switch */
-#define PUMP_CTRL 30
-</code></pre>
-
-<p>Here is a close up of those very same pins being used:
-<img src="https://raw.github.com/dullahan-soft/thermo-server/master/images/overhead2.jpg" alt="closeup"></p>
-
-<h3>Dashboard</h3>
-
-<p><img src="https://raw.github.com/dullahan-soft/thermo-server/master/images/dash-pic.png" alt="dash">
-In the repository under the dash directory lives a little AngularJS app that can pull data from the Arduino web-server.  The dash is good for debugging, displays a graph of the readings, general server state, and can issue pump commands.  Note, the dash is all client-side so the temperature data it pulls is not persistent.  You'll want to set up a data server elsewhere and if you are so inclined reconfigure the dash to point to there at least for the temperature readings.</p>
-
-<p>Included within the dash directory is also a sinatra app that I used while building and testing.  You could use this or your web-server of choice.  Note, that the dash.html file must be served and accessing the file in the browser via the file system will not work.</p>
-
-<h3>Extra</h3>
-
-<p>Here is a pic of the three MAX boards I burned while working on this project:
-<img src="https://raw.github.com/dullahan-soft/thermo-server/master/images/fried.jpg" alt="fried"></p>
+<p>The code for the Arduino web-server can be found on <a href="https://github.com/dullahan-soft/thermo-server">github</a>.  The dash app can be found in the same repo.  An example dash instance (running off of simulated data) is also available if you would like to see it in action at <a href="http://demo-dash.herokuapp.com/">demo-dash.herokuapp.com</a></p>
 
 <h3>Authors and Contributors</h3>
 
@@ -126,7 +100,9 @@ In the repository under the dash directory lives a little AngularJS app that can
 
 <h3>Support or Contact</h3>
 
-<p><a href="mailto:chris.cacciatore@dullahansoft.com">chris.cacciatore@dullahansoft.com</a></p>
+<p>email: <a href="mailto:chris.cacciatore@dullahansoft.com">chris.cacciatore@dullahansoft.com</a>
+web: <a href="http://www.dullahansoft.com">dullahansoft</a>
+twitter: <a href="http://twitter.com/cacciatc">@cacciatc</a></p>
         </section>
 
         <aside id="sidebar">
